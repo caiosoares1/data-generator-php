@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class DataGeneratorController extends Controller
 {
@@ -20,35 +19,11 @@ class DataGeneratorController extends Controller
         ]);
 
         $type = $request->input('type');
-        $quantity = $request->input('quantity', 1);
+        $quantity = $request->input('quantity');
         $data = [];
 
         for ($i = 0; $i < $quantity; $i++) {
-            switch ($type) {
-                case 'email':
-                    $data[] = $this->generateEmail();
-                    break;
-                case 'cpf':
-                    $data[] = $this->generateCPF();
-                    break;
-                case 'password':
-                    $data[] = $this->generatePassword();
-                    break;
-                case 'phone':
-                    $data[] = $this->generatePhone();
-                    break;
-                case 'name':
-                    $data[] = $this->generateName();
-                    break;
-                case 'cnpj':
-                    $data[] = $this->generateCNPJ();
-                    break;
-                case 'rg':
-                    $data[] = $this->generateRG();
-                    break;
-                default:
-                    $data[] = 'Tipo não suportado';
-            }
+            $data[] = $this->generateData($type);
         }
 
         return response()->json([
@@ -59,10 +34,24 @@ class DataGeneratorController extends Controller
         ]);
     }
 
+    private function generateData($type)
+    {
+        return match($type) {
+            'email' => $this->generateEmail(),
+            'cpf' => $this->generateCPF(),
+            'cnpj' => $this->generateCNPJ(),
+            'rg' => $this->generateRG(),
+            'password' => $this->generatePassword(),
+            'phone' => $this->generatePhone(),
+            'name' => $this->generateName(),
+            default => 'Tipo não suportado'
+        };
+    }
+
     private function generateEmail()
     {
-        $domains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'uol.com.br', 'terra.com.br'];
-        $prefixes = ['user', 'teste', 'admin', 'contact', 'info', 'example'];
+        $domains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'uol.com.br'];
+        $prefixes = ['user', 'teste', 'admin', 'contato', 'info'];
         
         $prefix = $prefixes[array_rand($prefixes)];
         $number = rand(100, 9999);
@@ -78,7 +67,7 @@ class DataGeneratorController extends Controller
             $cpf .= rand(0, 9);
         }
         
-        // Cálculo do primeiro dígito verificador
+        // Calcular dígitos verificadores
         $soma = 0;
         for ($i = 0; $i < 9; $i++) {
             $soma += $cpf[$i] * (10 - $i);
@@ -86,7 +75,6 @@ class DataGeneratorController extends Controller
         $resto = $soma % 11;
         $dv1 = $resto < 2 ? 0 : 11 - $resto;
         
-        // Cálculo do segundo dígito verificador
         $soma = 0;
         for ($i = 0; $i < 9; $i++) {
             $soma += $cpf[$i] * (11 - $i);
@@ -106,9 +94,9 @@ class DataGeneratorController extends Controller
         for ($i = 0; $i < 8; $i++) {
             $cnpj .= rand(0, 9);
         }
-        $cnpj .= '0001'; // Filial padrão
+        $cnpj .= '0001';
 
-        // Primeiro dígito verificador
+        // Calcular dígitos verificadores
         $soma = 0;
         $pesos = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
         for ($i = 0; $i < 12; $i++) {
@@ -117,7 +105,6 @@ class DataGeneratorController extends Controller
         $resto = $soma % 11;
         $dv1 = $resto < 2 ? 0 : 11 - $resto;
 
-        // Segundo dígito verificador
         $soma = 0;
         $pesos = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
         for ($i = 0; $i < 12; $i++) {
@@ -139,8 +126,7 @@ class DataGeneratorController extends Controller
             $rg .= rand(0, 9);
         }
         
-        // Digito verificador do RG (simplificado)
-        $dv = chr(rand(65, 90)); // Letra aleatória
+        $dv = chr(rand(65, 90));
         
         return substr($rg, 0, 2) . '.' . substr($rg, 2, 3) . '.' . substr($rg, 5, 3) . '-' . $dv;
     }
@@ -181,25 +167,16 @@ class DataGeneratorController extends Controller
         $nomes = [
             'João', 'Maria', 'Pedro', 'Ana', 'Carlos', 'Fernanda', 'Roberto', 'Juliana', 
             'Marcos', 'Larissa', 'Rafael', 'Camila', 'Bruno', 'Beatriz', 'Lucas', 'Mariana',
-            'Diego', 'Patrícia', 'Rodrigo', 'Débora', 'Felipe', 'Carla', 'Gustavo', 'Renata',
-            'Thiago', 'Daniela', 'Vinícius', 'Cristina', 'Leandro', 'Mônica'
+            'Diego', 'Patrícia', 'Rodrigo', 'Débora', 'Felipe', 'Carla', 'Gustavo', 'Renata'
         ];
         
         $sobrenomes = [
             'Silva', 'Santos', 'Oliveira', 'Souza', 'Rodrigues', 'Ferreira', 'Alves', 'Pereira',
-            'Lima', 'Gomes', 'Ribeiro', 'Carvalho', 'Castro', 'Almeida', 'Soares', 'Nascimento',
-            'Araújo', 'Rocha', 'Cardoso', 'Nunes', 'Teixeira', 'Reis', 'Fernandes', 'Machado',
-            'Barbosa', 'Melo', 'Dias', 'Monteiro', 'Mendes', 'Freitas'
+            'Lima', 'Gomes', 'Ribeiro', 'Carvalho', 'Castro', 'Almeida', 'Soares', 'Nascimento'
         ];
         
         $nome = $nomes[array_rand($nomes)];
         $sobrenome = $sobrenomes[array_rand($sobrenomes)];
-        
-        // Às vezes adicionar um segundo sobrenome
-        if (rand(0, 1)) {
-            $segundoSobrenome = $sobrenomes[array_rand($sobrenomes)];
-            return $nome . ' ' . $sobrenome . ' ' . $segundoSobrenome;
-        }
         
         return $nome . ' ' . $sobrenome;
     }

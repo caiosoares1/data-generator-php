@@ -1,24 +1,32 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Gerador de Dados') }}
-        </h2>
+        <div class="flex justify-between items-center">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                🎲 Gerador de Dados
+            </h2>
+            <form method="POST" action="{{ route('logout') }}" class="inline">
+                @csrf
+                <button type="submit" class="text-sm text-gray-500 hover:text-gray-700">
+                    Sair
+                </button>
+            </form>
+        </div>
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+                <div class="p-6">
                     <!-- Formulário de Geração -->
-                    <div class="mb-6">
-                        <h3 class="text-lg font-medium text-gray-900 mb-4">Selecione o tipo de dado para gerar:</h3>
-                        
-                        <form id="generatorForm" class="space-y-4">
+                    <div class="mb-8">
+                        <form id="generatorForm" class="space-y-6">
                             @csrf
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label for="type" class="block text-sm font-medium text-gray-700">Tipo de Dado</label>
-                                    <select id="type" name="type" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div class="md:col-span-2">
+                                    <label for="type" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Tipo de Dado
+                                    </label>
+                                    <select id="type" name="type" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                                         <option value="email">📧 Email</option>
                                         <option value="cpf">🆔 CPF</option>
                                         <option value="cnpj">🏢 CNPJ</option>
@@ -30,48 +38,75 @@
                                 </div>
                                 
                                 <div>
-                                    <label for="quantity" class="block text-sm font-medium text-gray-700">Quantidade</label>
-                                    <input type="number" id="quantity" name="quantity" min="1" max="100" value="1" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                    <label for="quantity" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Quantidade
+                                    </label>
+                                    <input type="number" id="quantity" name="quantity" min="1" max="100" value="5" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                                 </div>
                             </div>
                             
-                            <div class="flex justify-start">
-                                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-200">
+                            <div class="flex justify-center">
+                                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-8 rounded-md transition duration-200 shadow-sm">
                                     🎲 Gerar Dados
                                 </button>
                             </div>
                         </form>
                     </div>
                     
-                    <!-- Área de Loading -->
+                    <!-- Loading -->
                     <div id="loading" class="hidden">
-                        <div class="flex items-center justify-center py-4">
-                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                            <span class="ml-2">Gerando dados...</span>
+                        <div class="flex flex-col items-center justify-center py-12">
+                            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                            <span class="mt-4 text-gray-600">Gerando dados...</span>
                         </div>
                     </div>
                     
                     <!-- Resultados -->
                     <div id="results" class="hidden">
-                        <h3 class="text-lg font-medium text-gray-900 mb-4">Resultados:</h3>
-                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="text-sm font-medium text-gray-700">Dados gerados:</span>
-                                <div class="space-x-2">
-                                    <button onclick="copyResults()" class="text-blue-500 hover:text-blue-700 text-sm font-medium">
+                        <div class="border-t border-gray-200 pt-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-medium text-gray-900">
+                                    Resultados
+                                </h3>
+                                <div class="flex space-x-3">
+                                    <button onclick="copyResults()" class="text-blue-500 hover:text-blue-700 text-sm font-medium flex items-center">
                                         📋 Copiar Tudo
                                     </button>
-                                    <button onclick="clearResults()" class="text-red-500 hover:text-red-700 text-sm font-medium">
+                                    <button onclick="clearResults()" class="text-red-500 hover:text-red-700 text-sm font-medium flex items-center">
                                         🗑️ Limpar
                                     </button>
                                 </div>
                             </div>
-                            <div id="resultContent" class="space-y-2 max-h-96 overflow-y-auto">
-                                <!-- Resultados serão inseridos aqui -->
+                            
+                            <div class="bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
+                                <div id="resultContent" class="space-y-2">
+                                    <!-- Resultados serão inseridos aqui -->
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
+            
+            <!-- Informações sobre os tipos de dados -->
+            <div class="mt-8 bg-blue-50 rounded-lg p-6">
+                <h3 class="text-lg font-medium text-blue-900 mb-4">ℹ️ Sobre os Dados Gerados</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-800">
+                    <div>
+                        <p><strong>📧 Email:</strong> Endereços de email fictícios</p>
+                        <p><strong>🆔 CPF:</strong> CPFs válidos matematicamente</p>
+                        <p><strong>🏢 CNPJ:</strong> CNPJs válidos matematicamente</p>
+                        <p><strong>📄 RG:</strong> RGs no formato padrão</p>
+                    </div>
+                    <div>
+                        <p><strong>🔒 Senha:</strong> Senhas seguras com símbolos</p>
+                        <p><strong>📱 Telefone:</strong> Números com DDDs válidos</p>
+                        <p><strong>👤 Nome:</strong> Nomes brasileiros aleatórios</p>
+                    </div>
+                </div>
+                <p class="mt-4 text-xs text-blue-600">
+                    ⚠️ Todos os dados são fictícios e gerados aleatoriamente para fins de desenvolvimento e teste.
+                </p>
             </div>
         </div>
     </div>
@@ -123,10 +158,10 @@
             
             data.forEach((item, index) => {
                 const div = document.createElement('div');
-                div.className = 'flex justify-between items-center bg-white border border-gray-200 rounded px-3 py-2 hover:bg-gray-50 transition duration-200';
+                div.className = 'flex justify-between items-center bg-white border border-gray-200 rounded-md px-4 py-3 hover:bg-gray-50 transition duration-200';
                 div.innerHTML = `
-                    <span class="text-sm text-gray-700 font-mono select-all">${item}</span>
-                    <button onclick="copyToClipboard('${item}', this)" class="text-blue-500 hover:text-blue-700 text-sm px-2 py-1 rounded hover:bg-blue-50 transition duration-200">
+                    <span class="text-sm text-gray-900 font-mono select-all flex-1">${item}</span>
+                    <button onclick="copyToClipboard('${item.replace(/'/g, "\\'")}', this)" class="ml-4 text-blue-500 hover:text-blue-700 text-sm px-2 py-1 rounded hover:bg-blue-50 transition duration-200">
                         📋
                     </button>
                 `;
@@ -154,7 +189,15 @@
             const allText = Array.from(results).map(el => el.textContent).join('\n');
             
             navigator.clipboard.writeText(allText).then(function() {
-                alert('Todos os resultados copiados para a área de transferência!');
+                const button = event.target;
+                const originalText = button.innerHTML;
+                button.innerHTML = '✅ Copiado!';
+                button.classList.add('text-green-500');
+                
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.classList.remove('text-green-500');
+                }, 2000);
             });
         }
 

@@ -4,22 +4,20 @@ use App\Http\Controllers\DataGeneratorController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
+// Rota principal - redireciona para o gerador se logado, senão para login
 Route::get('/', function () {
-    return view('welcome');
+    return auth()->check() ? redirect()->route('generator.index') : redirect()->route('login');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
+// Rotas protegidas por autenticação
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    
-    // Rotas do gerador de dados
     Route::get('/generator', [DataGeneratorController::class, 'index'])->name('generator.index');
     Route::post('/generator/generate', [DataGeneratorController::class, 'generate'])->name('generator.generate');
+
+    // Rotas para Profile
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 require __DIR__.'/auth.php';
