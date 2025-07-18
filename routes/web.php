@@ -10,20 +10,31 @@ Route::get('/', function () {
     return auth()->check() ? redirect()->route('generator.index') : redirect()->route('login');
 });
 
-
-
+// Health check melhorado
 Route::get('/health', function() {
     try {
+        // Test database connection
         DB::connection()->getPdo();
+        $dbStatus = 'connected';
+        
+        // Test basic query
+        $userCount = DB::table('users')->count();
+        
         return response()->json([
             'status' => 'healthy',
             'app_port' => env('PORT', 10000),
-            'db_port' => env('DB_PORT', 5432)
+            'db_port' => env('DB_PORT', 5432),
+            'db_status' => $dbStatus,
+            'user_count' => $userCount,
+            'timestamp' => now()->toISOString()
         ]);
     } catch (\Exception $e) {
         return response()->json([
             'status' => 'unhealthy',
-            'error' => $e->getMessage()
+            'error' => $e->getMessage(),
+            'app_port' => env('PORT', 10000),
+            'db_port' => env('DB_PORT', 5432),
+            'timestamp' => now()->toISOString()
         ], 503);
     }
 });
@@ -35,7 +46,7 @@ Route::middleware('auth')->group(function () {
 
     // Rotas para Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 

@@ -6,25 +6,37 @@ services:
     dockerfilePath: ./Dockerfile
     autoDeploy: true
     
-    # Render's required port configuration
-    port: 10000
+    # Build command
+    buildCommand: echo "Building Laravel app..."
+    
+    # Health check
+    healthCheckPath: /health
+    
     envVars:
       - key: PORT
         value: 10000
+      - key: APP_NAME
+        value: DataGenerator
       - key: APP_ENV
         value: production
       - key: APP_KEY
         generateValue: true
       - key: APP_DEBUG
         value: false
+      - key: APP_URL
+        value: https://your-app-name.onrender.com
       - key: DB_CONNECTION
         value: pgsql
       - key: CACHE_DRIVER
         value: array
       - key: SESSION_DRIVER
         value: file
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: LOG_CHANNEL
+        value: errorlog
       
-      # Database variables (auto-linked)
+      # Database variables
       - key: DB_HOST
         fromDatabase:
           name: laravel-db
