@@ -14,7 +14,7 @@ Route::get('/health', function() {
         DB::connection()->getPdo();
         return response('OK', 200);
     } catch (\Exception $e) {
-        return response('Database not available', 500);
+        return response('Service Unavailable', 503);
     }
 });
 

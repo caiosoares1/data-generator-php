@@ -7,7 +7,10 @@ do
   sleep 5
 done
 
-# Executa migrações (opcional)
+# Executa migrações e otimizações que dependem do banco
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
 php artisan migrate --force
 
 # Inicia o Apache
