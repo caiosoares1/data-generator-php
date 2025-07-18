@@ -136,7 +136,7 @@ class DataGeneratorController extends Controller
         $lowercase = 'abcdefghijklmnopqrstuvwxyz';
         $uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
         $numbers = '0123456789';
-        $special = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+        $special = '!@#$%&*_?';
         
         $password = '';
         $password .= $lowercase[rand(0, strlen($lowercase) - 1)];
