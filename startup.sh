@@ -7,8 +7,8 @@ do
   sleep 5
 done
 
-# Executa migrações (opcional - remova se não quiser migrações automáticas)
+# Executa migrações (opcional)
 php artisan migrate --force
 
 # Inicia o Apache
-apache2-foreground
+exec apache2-foreground

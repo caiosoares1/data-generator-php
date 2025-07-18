@@ -6,24 +6,30 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install pdo pdo_pgsql zip \
     && a2enmod rewrite
 
-# Instala Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Instala Composer (como usuário não-root)
+COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 
 # Define diretório de trabalho
 WORKDIR /var/www/html
 
-# Copia apenas o necessário para instalar dependências primeiro
-COPY composer.json composer.lock ./
+# Cria usuário não-root para segurança
+RUN useradd -G www-data,root -d /home/laraveluser laraveluser \
+    && mkdir -p /home/laraveluser \
+    && chown -R laraveluser:laraveluser /home/laraveluser
 
-# Instala dependências do Laravel (sem scripts para evitar erros)
+# Copia apenas o necessário para instalar dependências primeiro
+COPY --chown=laraveluser:laraveluser composer.json composer.lock ./
+
+# Instala dependências como usuário não-root
+USER laraveluser
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-scripts
+USER root
 
 # Copia o restante dos arquivos
-COPY . .
+COPY --chown=laraveluser:laraveluser . .
 
-# Executa scripts pós-instalação e otimiza a aplicação
-RUN composer run-script post-install-cmd \
-    && php artisan optimize:clear \
+# Otimiza a aplicação Laravel
+RUN php artisan optimize:clear \
     && php artisan optimize \
     && chown -R www-data:www-data storage bootstrap/cache
 
@@ -33,6 +39,7 @@ RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' /e
 
 EXPOSE 80
 
-# Comando de saúde para verificar se o app está pronto
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost/health || exit 1
+# Script de entrada personalizado
+COPY --chown=laraveluser:laraveluser startup.sh /usr/local/bin/startup.sh
+RUN chmod +x /usr/local/bin/startup.sh
+CMD ["/usr/local/bin/startup.sh"]
