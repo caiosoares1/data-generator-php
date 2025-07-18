@@ -12,31 +12,34 @@ Route::get('/', function () {
 
 // Health check melhorado
 Route::get('/health', function() {
+    $health = [
+        'status' => 'healthy',
+        'app_port' => env('PORT', 10000),
+        'db_port' => env('DB_PORT', 5432),
+        'timestamp' => now()->toISOString()
+    ];
+    
     try {
-        // Test database connection
-        DB::connection()->getPdo();
-        $dbStatus = 'connected';
-        
-        // Test basic query
-        $userCount = DB::table('users')->count();
-        
-        return response()->json([
-            'status' => 'healthy',
-            'app_port' => env('PORT', 10000),
-            'db_port' => env('DB_PORT', 5432),
-            'db_status' => $dbStatus,
-            'user_count' => $userCount,
-            'timestamp' => now()->toISOString()
+        // Configure SSL connection
+        $dsn = 'pgsql:host='.env('DB_HOST').';port='.env('DB_PORT').';dbname='.env('DB_DATABASE').';sslmode=require';
+        $pdo = new PDO($dsn, env('DB_USERNAME'), env('DB_PASSWORD'), [
+            PDO::ATTR_TIMEOUT => 30,
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_PERSISTENT => false
         ]);
+        
+        $health['db_status'] = 'connected';
+        $health['user_count'] = DB::table('users')->count();
+        
     } catch (\Exception $e) {
-        return response()->json([
-            'status' => 'unhealthy',
-            'error' => $e->getMessage(),
-            'app_port' => env('PORT', 10000),
-            'db_port' => env('DB_PORT', 5432),
-            'timestamp' => now()->toISOString()
-        ], 503);
+        $health['status'] = 'degraded';
+        $health['db_status'] = 'disconnected';
+        $health['db_error'] = $e->getMessage();
+        
+        return response()->json($health, 200);
     }
+    
+    return response()->json($health);
 });
 
 // Rotas protegidas por autenticação

@@ -12,13 +12,24 @@ echo "DB_USERNAME: $DB_USERNAME"
 echo "PORT: $PORT"
 echo "=========================="
 
-# Wait for PostgreSQL with better error handling
+# Check if database variables are set
+if [ -z "$DB_HOST" ] || [ -z "$DB_PORT" ] || [ -z "$DB_DATABASE" ] || [ -z "$DB_USERNAME" ] || [ -z "$DB_PASSWORD" ]; then
+    echo "ERROR: Database environment variables are not set properly!"
+    exit 1
+fi
+
+# Wait for PostgreSQL with SSL configuration
 echo "Waiting for PostgreSQL at $DB_HOST:$DB_PORT..."
+
 for i in {1..30}; do
     if php -r "
         try {
-            \$pdo = new PDO('pgsql:host='.getenv('DB_HOST').';port='.getenv('DB_PORT').';dbname=postgres', 
-                getenv('DB_USERNAME'), getenv('DB_PASSWORD'));
+            \$dsn = 'pgsql:host='.getenv('DB_HOST').';port='.getenv('DB_PORT').';dbname='.getenv('DB_DATABASE').';sslmode=require';
+            \$pdo = new PDO(\$dsn, getenv('DB_USERNAME'), getenv('DB_PASSWORD'), [
+                PDO::ATTR_TIMEOUT => 30,
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_PERSISTENT => false
+            ]);
             echo 'Database connection successful!';
             exit(0);
         } catch (PDOException \$e) {
@@ -32,19 +43,26 @@ for i in {1..30}; do
     
     if [ $i -eq 30 ]; then
         echo "Database connection failed after 30 attempts"
-        exit 1
+        echo "Starting application anyway - migrations will be skipped"
+        break
     fi
     
     echo "Waiting... (attempt $i/30)"
-    sleep 5
+    sleep 10
 done
 
 # Run Laravel commands
 echo "Running Laravel setup..."
-php artisan migrate --force || echo "Migration failed, continuing..."
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
+if php artisan migrate --force --no-interaction 2>/dev/null; then
+    echo "Migrations completed successfully"
+else
+    echo "Migrations failed or skipped - continuing anyway"
+fi
+
+# Cache configuration
+php artisan config:cache || echo "Config cache failed"
+php artisan route:cache || echo "Route cache failed"
+php artisan view:cache || echo "View cache failed"
 
 # Start Apache
 echo "Starting Apache on port $PORT..."

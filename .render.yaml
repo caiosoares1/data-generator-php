@@ -20,21 +20,23 @@ services:
       - key: APP_DEBUG
         value: false
       - key: APP_URL
-        value: https://data-generator-php.onrender.com
+        value: https://your-app-name.onrender.com
       - key: DB_CONNECTION
         value: pgsql
       
-      # Configure manualmente com a URL externa
+      # Configure com SSL
       - key: DB_HOST
         value: dpg-d1t99ker433s73csnop2g-a.oregon-postgres.render.com
       - key: DB_PORT
         value: 5432
       - key: DB_DATABASE
-        value: laravel
+        value: laravel_ugqc_user
       - key: DB_USERNAME
         value: laravel_ugqc_user
       - key: DB_PASSWORD
         value: JRtBGIIElUtPcwKkbAjwBTL8zeVtBR1Zadpg
+      - key: DB_SSLMODE
+        value: require
         
       - key: CACHE_DRIVER
         value: array
