@@ -8,18 +8,13 @@ services:
     envVars:
       - key: APP_ENV
         value: production
-
-      # Gera uma chave de aplicação se não estiver definida manualmente
       - key: APP_KEY
         generateValue: true
-
       - key: APP_DEBUG
         value: false
-
       - key: DB_CONNECTION
         value: pgsql
-
-      # Variáveis de banco de dados obtidas automaticamente do banco criado abaixo
+      # Variáveis de banco de dados
       - key: DB_HOST
         fromDatabase:
           name: laravel-db
@@ -40,6 +35,9 @@ services:
         fromDatabase:
           name: laravel-db
           property: password
+    # Aumenta o timeout de inicialização
+    healthCheckPath: /health
+    initialDelay: 180
 
 databases:
   - name: laravel-db

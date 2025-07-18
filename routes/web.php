@@ -9,6 +9,15 @@ Route::get('/', function () {
     return auth()->check() ? redirect()->route('generator.index') : redirect()->route('login');
 });
 
+Route::get('/health', function() {
+    try {
+        DB::connection()->getPdo();
+        return response('OK', 200);
+    } catch (\Exception $e) {
+        return response('Database not available', 500);
+    }
+});
+
 // Rotas protegidas por autenticação
 Route::middleware('auth')->group(function () {
     Route::get('/generator', [DataGeneratorController::class, 'index'])->name('generator.index');
