@@ -6,11 +6,11 @@ services:
     dockerfilePath: ./Dockerfile
     autoDeploy: true
     
-    # Critical port configuration
-    port: 80
+    # Port configuration
+    port: 8000
     network:
       - name: render-network
-        port: 80
+        port: 8000
     
     healthCheckPath: /health
     initialDelay: 120
@@ -56,4 +56,3 @@ services:
 databases:
   - name: laravel-db
     plan: free
-    # PostgreSQL uses 5432 internally - don't change this

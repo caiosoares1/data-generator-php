@@ -17,6 +17,7 @@ Route::get('/health', function() {
         DB::connection()->getPdo();
         return response()->json([
             'status' => 'healthy',
+            'port' => 8000,
             'services' => [
                 'database' => true,
                 'web' => true
