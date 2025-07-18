@@ -5,10 +5,16 @@ services:
     plan: free
     dockerfilePath: ./Dockerfile
     autoDeploy: true
-    port: 80  # Porta obrigatória
+    
+    # Critical port configuration
+    port: 80
+    network:
+      - name: render-network
+        port: 80
+    
     healthCheckPath: /health
-    initialDelay: 60  # Tempo para inicialização
-
+    initialDelay: 120
+    
     envVars:
       - key: APP_ENV
         value: production
@@ -25,7 +31,7 @@ services:
       - key: QUEUE_CONNECTION
         value: sync
       
-      # Variáveis do banco (vinculadas automaticamente)
+      # Database variables
       - key: DB_HOST
         fromDatabase:
           name: laravel-db
@@ -50,3 +56,4 @@ services:
 databases:
   - name: laravel-db
     plan: free
+    # PostgreSQL uses 5432 internally - don't change this
