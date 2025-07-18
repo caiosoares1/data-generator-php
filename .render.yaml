@@ -6,16 +6,11 @@ services:
     dockerfilePath: ./Dockerfile
     autoDeploy: true
     
-    # Port configuration
-    port: 8000
-    network:
-      - name: render-network
-        port: 8000
-    
-    healthCheckPath: /health
-    initialDelay: 120
-    
+    # Render's required port configuration
+    port: 10000
     envVars:
+      - key: PORT
+        value: 10000
       - key: APP_ENV
         value: production
       - key: APP_KEY
@@ -28,10 +23,8 @@ services:
         value: array
       - key: SESSION_DRIVER
         value: file
-      - key: QUEUE_CONNECTION
-        value: sync
       
-      # Database variables
+      # Database variables (auto-linked)
       - key: DB_HOST
         fromDatabase:
           name: laravel-db

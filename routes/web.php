@@ -17,11 +17,8 @@ Route::get('/health', function() {
         DB::connection()->getPdo();
         return response()->json([
             'status' => 'healthy',
-            'port' => 8000,
-            'services' => [
-                'database' => true,
-                'web' => true
-            ]
+            'app_port' => env('PORT', 10000),
+            'db_port' => env('DB_PORT', 5432)
         ]);
     } catch (\Exception $e) {
         return response()->json([
