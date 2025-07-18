@@ -12,9 +12,9 @@ Route::get('/', function () {
 Route::get('/health', function() {
     try {
         DB::connection()->getPdo();
-        return response('OK', 200);
+        return response()->json(['status' => 'healthy']);
     } catch (\Exception $e) {
-        return response('Service Unavailable', 503);
+        return response()->json(['status' => 'unhealthy', 'error' => $e->getMessage()], 503);
     }
 });
 

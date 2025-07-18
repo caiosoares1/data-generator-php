@@ -1,17 +1,23 @@
 #!/bin/bash
 
-# Espera o banco de dados ficar disponível
-until nc -z -v -w30 $DB_HOST $DB_PORT
-do
-  echo "Aguardando o banco de dados..."
-  sleep 5
+# Verifica conexão com o PostgreSQL usando PHP nativo
+while ! php -r "try {
+    \$pdo = new PDO('pgsql:host='.getenv('DB_HOST').';port='.getenv('DB_PORT').';dbname='.getenv('DB_DATABASE'), 
+    getenv('DB_USERNAME'), 
+    getenv('DB_PASSWORD'));
+    exit(0);
+} catch (PDOException \$e) {
+    file_put_contents('php://stderr', 'Waiting for database... '. \$e->getMessage() . PHP_EOL);
+    exit(1);
+}" >/dev/null 2>&1; do
+    sleep 5
 done
 
-# Executa migrações e otimizações que dependem do banco
+# Executa migrações e otimizações
+php artisan migrate --force
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
-php artisan migrate --force
 
-# Inicia o Apache
+# Inicia Apache
 exec apache2-foreground

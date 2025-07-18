@@ -5,8 +5,10 @@ services:
     plan: free
     dockerfilePath: ./Dockerfile
     autoDeploy: true
+    port: 80  # Porta obrigatória
     healthCheckPath: /health
-    initialDelay: 180
+    initialDelay: 60  # Tempo para inicialização
+
     envVars:
       - key: APP_ENV
         value: production
@@ -22,6 +24,8 @@ services:
         value: file
       - key: QUEUE_CONNECTION
         value: sync
+      
+      # Variáveis do banco (vinculadas automaticamente)
       - key: DB_HOST
         fromDatabase:
           name: laravel-db
